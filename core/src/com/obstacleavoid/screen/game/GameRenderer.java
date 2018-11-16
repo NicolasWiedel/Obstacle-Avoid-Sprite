@@ -1,12 +1,15 @@
 package com.obstacleavoid.screen.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -15,6 +18,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.obstacleavoid.assets.AssetDescriptors;
+import com.obstacleavoid.assets.RegionNames;
 import com.obstacleavoid.config.GameConfig;
 import com.obstacleavoid.entity.ObstacleSprite;
 import com.obstacleavoid.entity.PlayerSprite;
@@ -41,6 +45,8 @@ public class GameRenderer implements Disposable {
     private final AssetManager assetManager;
     private final SpriteBatch batch;
 
+    private TextureRegion backgroundRegion;
+
     // == Constructor ==
     public GameRenderer(SpriteBatch batch, AssetManager assetManager, GameController controller){
         this.batch = batch;
@@ -63,6 +69,8 @@ public class GameRenderer implements Disposable {
         debugCameraController = new DebugCameraController();
         debugCameraController.setStartPosition(GameConfig.WORLD_CENTER_X, GameConfig.WORLD_CENTER_Y);
 
+        TextureAtlas gamePlayAtlas = assetManager.get(AssetDescriptors.GAME_PLAY);
+        backgroundRegion = gamePlayAtlas.findRegion(RegionNames.BACKGROUND);
     }
 
     // == public methods ==
@@ -117,27 +125,16 @@ public class GameRenderer implements Disposable {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // draw background
-//        Background background = controller.getBackground();
-//        batch.draw(backgroundRegion,
-//                background.getX(), background.getY(),
-//                background.getWidth(), background.getHeight());
+        // draw bckground
+        batch.draw(backgroundRegion, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT);
 
         // draw player
         PlayerSprite player = controller.getPlayer();
         player.draw(batch);
-//        batch.draw(player,
-//                player.getX(), player.getY(),
-//                player.getWidth(), player.getHeight()
-//        );
 
         // draw obstacles
         for(ObstacleSprite obstacle : controller.getObstacles()){
             obstacle.draw(batch);
-//            batch.draw(obstacleRegion,
-//                    obstacle.getX(), obstacle.getY(),
-//                    obstacle.getWidth(), obstacle.getHeight()
-//            );
         }
 
 

@@ -29,6 +29,18 @@ public abstract class GameSpriteBase extends Sprite {
         updateBounds();
     }
 
+    @Override
+    public void setX(float x) {
+        super.setX(x);
+        updateBounds();
+    }
+
+    @Override
+    public void setY(float y) {
+        super.setY(y);
+        updateBounds();
+    }
+
     public void updateBounds(){
         if(bounds == null){
             return;

@@ -33,7 +33,6 @@ public class GameController {
     private int lives = GameConfig.LIVES_START;
     private int score;
     private int displayedScore;
-    private Pool<ObstacleSprite> obstaclePool;
     private Sound hit;
 
     private final ObstacleAvoidGame game;
@@ -58,9 +57,6 @@ public class GameController {
 
         // position player
         player.setPosition(startPlayerX, startPlayerY);
-
-        // create obstaclePool
-        obstaclePool =Pools.get(ObstacleSprite.class, 40);
 
         // create background
         background = new Background();
@@ -118,18 +114,18 @@ public class GameController {
 
     // == private methods ==
     private void restart(){
-        obstaclePool.freeAll(obstacles);
+        factory.freeAll(obstacles);
         obstacles.clear();
         player.setPosition(startPlayerX, startPlayerY);
     }
 
     private boolean isPlayerCollidingWithObstacle(){
-//        for(Obstacle obstacle : obstacles){
-//            if(obstacle.isNotHit() && obstacle.isPlayerColliding(player)){
-//                hit.play();
-//                return true;
-//            }
-//        }
+        for(ObstacleSprite obstacle : obstacles){
+            if(obstacle.isNotHit() && obstacle.isPlayerColliding(player)){
+                hit.play();
+                return true;
+            }
+        }
         return false;
     }
 
@@ -174,7 +170,8 @@ public class GameController {
             float obstacleX = MathUtils.random(max, min);
             float obstacleY = GameConfig.WORLD_HEIGHT;
 
-            ObstacleSprite obstacle = obstaclePool.obtain();
+            ObstacleSprite obstacle = factory.obtain();
+
             DifficultyLevel difficultyLevel = GameManager.INSTANCE.getDifficultyLevel();
             obstacle.setYSpeed(difficultyLevel.getObstacleSpeed());
             obstacle.setPosition(obstacleX, obstacleY);
@@ -192,7 +189,7 @@ public class GameController {
 
             if(first.getY() < minObstacleY){
                 obstacles.removeValue(first, true);
-                obstaclePool.free(first);
+                factory.free(first);
             }
         }
     }
