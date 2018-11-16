@@ -11,12 +11,13 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 import com.obstacleavoid.ObstacleAvoidGame;
 import com.obstacleavoid.assets.AssetDescriptors;
+import com.obstacleavoid.common.EntityFactory;
 import com.obstacleavoid.common.GameManager;
 import com.obstacleavoid.config.DifficultyLevel;
 import com.obstacleavoid.config.GameConfig;
+import com.obstacleavoid.entity.ObstacleSprite;
+import com.obstacleavoid.entity.PlayerSprite;
 import com.obstacleavoid.entity._old.Background;
-import com.obstacleavoid.entity._old.Obstacle;
-import com.obstacleavoid.entity._old.Player;
 
 public class GameController {
 
@@ -24,19 +25,20 @@ public class GameController {
     private static final Logger log = new Logger(GameController.class.getName(), Logger.DEBUG);
 
     // == Attributes
-    private Player player;
-    private Array<Obstacle> obstacles = new Array<Obstacle>();
+    private PlayerSprite player;
+    private Array<ObstacleSprite> obstacles = new Array<ObstacleSprite>();
     private Background background;
     private float obstacleTime;
     private float scoreTimer;
     private int lives = GameConfig.LIVES_START;
     private int score;
     private int displayedScore;
-    private Pool<Obstacle> obstaclePool;
+    private Pool<ObstacleSprite> obstaclePool;
     private Sound hit;
 
     private final ObstacleAvoidGame game;
     private final AssetManager assetManager;
+    private final EntityFactory factory;
 
     private final float startPlayerX = (GameConfig.WORLD_WIDTH - GameConfig.PLAYER_SIZE) / 2 ;
     private final float startPlayerY = 1 - GameConfig.PLAYER_SIZE / 2;
@@ -45,19 +47,20 @@ public class GameController {
     public GameController(ObstacleAvoidGame game) {
         this.game = game;
         assetManager = game.getAssetManager();
+        factory = new EntityFactory(assetManager);
         init();
     }
 
     // init
     private void init(){
         // create player
-        player = new Player();
+        player = factory.createPlayer();
 
         // position player
         player.setPosition(startPlayerX, startPlayerY);
 
         // create obstaclePool
-        obstaclePool =Pools.get(Obstacle.class, 40);
+        obstaclePool =Pools.get(ObstacleSprite.class, 40);
 
         // create background
         background = new Background();
@@ -91,11 +94,11 @@ public class GameController {
         }
     }
 
-    public Player getPlayer() {
+    public PlayerSprite getPlayer() {
         return player;
     }
 
-    public Array<Obstacle> getObstacles() {
+    public Array<ObstacleSprite> getObstacles() {
         return obstacles;
     }
 
@@ -121,12 +124,12 @@ public class GameController {
     }
 
     private boolean isPlayerCollidingWithObstacle(){
-        for(Obstacle obstacle : obstacles){
-            if(obstacle.isNotHit() && obstacle.isPlayerColliding(player)){
-                hit.play();
-                return true;
-            }
-        }
+//        for(Obstacle obstacle : obstacles){
+//            if(obstacle.isNotHit() && obstacle.isPlayerColliding(player)){
+//                hit.play();
+//                return true;
+//            }
+//        }
         return false;
     }
 
@@ -153,7 +156,7 @@ public class GameController {
     }
 
     private void updateObstacles(float delta){
-        for(Obstacle obstacle : obstacles){
+        for(ObstacleSprite obstacle : obstacles){
             obstacle.update();
         }
 
@@ -171,7 +174,7 @@ public class GameController {
             float obstacleX = MathUtils.random(max, min);
             float obstacleY = GameConfig.WORLD_HEIGHT;
 
-            Obstacle obstacle = obstaclePool.obtain();
+            ObstacleSprite obstacle = obstaclePool.obtain();
             DifficultyLevel difficultyLevel = GameManager.INSTANCE.getDifficultyLevel();
             obstacle.setYSpeed(difficultyLevel.getObstacleSpeed());
             obstacle.setPosition(obstacleX, obstacleY);
@@ -183,7 +186,7 @@ public class GameController {
 
     private void removePassedObstacles(){
         if(obstacles.size > 0){
-            Obstacle first = obstacles.first();
+            ObstacleSprite first = obstacles.first();
 
             float minObstacleY = -GameConfig.OBSTACLE_SIZE;
 

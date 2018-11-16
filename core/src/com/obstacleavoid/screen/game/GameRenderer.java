@@ -2,12 +2,11 @@ package com.obstacleavoid.screen.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -16,11 +15,9 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.obstacleavoid.assets.AssetDescriptors;
-import com.obstacleavoid.assets.RegionNames;
 import com.obstacleavoid.config.GameConfig;
-import com.obstacleavoid.entity._old.Background;
-import com.obstacleavoid.entity._old.Obstacle;
-import com.obstacleavoid.entity._old.Player;
+import com.obstacleavoid.entity.ObstacleSprite;
+import com.obstacleavoid.entity.PlayerSprite;
 import com.obstacleavoid.util.GdxUtils;
 import com.obstacleavoid.util.ViewportUtils;
 import com.obstacleavoid.util.debug.DebugCameraController;
@@ -44,10 +41,6 @@ public class GameRenderer implements Disposable {
     private final AssetManager assetManager;
     private final SpriteBatch batch;
 
-    private TextureRegion playerRegion;
-    private TextureRegion obstacleRegion;
-    private TextureRegion backgroundRegion;
-
     // == Constructor ==
     public GameRenderer(SpriteBatch batch, AssetManager assetManager, GameController controller){
         this.batch = batch;
@@ -70,11 +63,6 @@ public class GameRenderer implements Disposable {
         debugCameraController = new DebugCameraController();
         debugCameraController.setStartPosition(GameConfig.WORLD_CENTER_X, GameConfig.WORLD_CENTER_Y);
 
-        TextureAtlas gamePlayAtlas = assetManager.get(AssetDescriptors.GAME_PLAY);
-
-        playerRegion = gamePlayAtlas.findRegion(RegionNames.PLAYER);
-        obstacleRegion = gamePlayAtlas.findRegion(RegionNames.OBSTACLE);
-        backgroundRegion = gamePlayAtlas.findRegion(RegionNames.BACKGROUND);
     }
 
     // == public methods ==
@@ -92,7 +80,7 @@ public class GameRenderer implements Disposable {
             System.out.println("screenTouch = " + screenTouch);
             System.out.println("worldTouch = " + worldTouch);
 
-            Player player = controller.getPlayer();
+            PlayerSprite player = controller.getPlayer();
             worldTouch.x = MathUtils.clamp(worldTouch.x, 0, GameConfig.WORLD_WIDTH - player.getWidth());
             player.setX(worldTouch.x);
         }
@@ -106,7 +94,7 @@ public class GameRenderer implements Disposable {
         renderUI();
 
         // render debug graphics
-//        renderDebug();
+        renderDebug();
 
         System.out.println("totalRenserCalls = " + batch.totalRenderCalls);
     }
@@ -130,24 +118,26 @@ public class GameRenderer implements Disposable {
         batch.begin();
 
         // draw background
-        Background background = controller.getBackground();
-        batch.draw(backgroundRegion,
-                background.getX(), background.getY(),
-                background.getWidth(), background.getHeight());
+//        Background background = controller.getBackground();
+//        batch.draw(backgroundRegion,
+//                background.getX(), background.getY(),
+//                background.getWidth(), background.getHeight());
 
         // draw player
-        Player player = controller.getPlayer();
-        batch.draw(playerRegion,
-                player.getX(), player.getY(),
-                player.getWidth(), player.getHeight()
-        );
+        PlayerSprite player = controller.getPlayer();
+        player.draw(batch);
+//        batch.draw(player,
+//                player.getX(), player.getY(),
+//                player.getWidth(), player.getHeight()
+//        );
 
         // draw obstacles
-        for(Obstacle obstacle : controller.getObstacles()){
-            batch.draw(obstacleRegion,
-                    obstacle.getX(), obstacle.getY(),
-                    obstacle.getWidth(), obstacle.getHeight()
-            );
+        for(ObstacleSprite obstacle : controller.getObstacles()){
+            obstacle.draw(batch);
+//            batch.draw(obstacleRegion,
+//                    obstacle.getX(), obstacle.getY(),
+//                    obstacle.getWidth(), obstacle.getHeight()
+//            );
         }
 
 
@@ -179,6 +169,9 @@ public class GameRenderer implements Disposable {
 
     private void renderDebug(){
         viewport.apply();
+
+        Color oldColor = renderer.getColor().cpy();
+
         renderer.setProjectionMatrix(camera.combined);
         renderer.begin(ShapeRenderer.ShapeType.Line);
 
@@ -186,16 +179,19 @@ public class GameRenderer implements Disposable {
 
         renderer.end();
 
+        renderer.setColor(oldColor);
+
         ViewportUtils.drawGrid(viewport,renderer);
     }
 
     private void drawDebug(){
-        Player player = controller.getPlayer();
+        renderer.setColor(Color.RED);
+        PlayerSprite player = controller.getPlayer();
         player.drawDebug(renderer);
-
-        Array<Obstacle> obstacles = controller.getObstacles();
-
-        for(Obstacle obstacle : obstacles){
+//
+        Array<ObstacleSprite> obstacles = controller.getObstacles();
+//
+        for(ObstacleSprite obstacle : obstacles){
             obstacle.drawDebug(renderer);
         }
     }
